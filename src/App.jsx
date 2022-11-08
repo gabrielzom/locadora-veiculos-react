@@ -11,7 +11,6 @@ import {
 import { TabPanel, TabList, TabContext } from '@mui/lab'
 import { operations } from './assets/resources'
 import { DataGrid } from '@mui/x-data-grid';
-import { width } from '@mui/system'
 
 const apiUrl = 'http://localhost:8080'
 
@@ -66,12 +65,15 @@ const App = () => {
     let body = {}
 
     headquarters.forEach((sql, index) => body['script'+index] = sql[sql.length-1])
+
     if(!body.script0) body.script0 = operation.scriptSQL[0]    
+
     setGeneratedSQLs(Object.keys(body).map(sql => body[sql]))
     
     const { data } = await axios.post(apiUrl.concat('/', operation.value), body)
 
     const dataGridHeaders = data.columns.map(column => column.name)
+
     setColumns(dataGridHeaders.map(header => {
       return {
         field: header,
