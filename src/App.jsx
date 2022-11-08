@@ -12,7 +12,7 @@ import { TabPanel, TabList, TabContext } from '@mui/lab'
 import { operations } from './assets/resources'
 import { DataGrid } from '@mui/x-data-grid';
 
-const apiUrl = 'https://locadora-pti-bd.herokuapp.com/'
+const apiUrl = 'https://locadora-pti-bd.herokuapp.com'
 
 const App = () => {
 
