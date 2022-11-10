@@ -144,7 +144,7 @@ const App = () => {
                         }}
                         onClick={async () => { 
                           setIsLoadingRequest(true) 
-                          const { generatedSQLs, rows, columns, isLoadingRequest } =  await executeOperationRequest(currentOperation)
+                          const { generatedSQLs, rows, columns, isLoadingRequest } =  await executeOperationRequest(currentOperation, fields)
                           setGeneratedSQLs(generatedSQLs)
                           setRows(rows)
                           setColumns(columns)

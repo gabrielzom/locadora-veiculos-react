@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const executeOperationRequest = async (operation) => {
+const executeOperationRequest = async (operation, fields) => {
   try {
     let body = {}
     let rows = []
