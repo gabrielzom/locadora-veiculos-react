@@ -180,3 +180,12 @@ export const operations = [
 ]
 
 
+export const fieldsInitialState = {
+  cnpj: '',
+  viagem: '',
+  placa: '',
+  cliente: '',
+  km_veiculo: '',
+  cpf: '',
+  cnh: '',
+}

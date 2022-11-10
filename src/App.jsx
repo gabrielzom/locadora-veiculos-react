@@ -1,101 +1,44 @@
 import { useState } from 'react'
 import './App.css'
-import axios from 'axios'
 import { 
   Grid,
   Button,
   TextField, 
   Tab, 
   Tooltip, 
+  CircularProgress,
 } from '@mui/material'
 import { TabPanel, TabList, TabContext } from '@mui/lab'
-import { operations } from './assets/resources'
+import { operations, fieldsInitialState } from './assets/resources'
 import { DataGrid } from '@mui/x-data-grid';
-
-const apiUrl = 'https://locadora-pti-bd.herokuapp.com'
+import executeOperationRequest from './api'
 
 const App = () => {
 
   const [ currentOperation, setCurrentOperation ] = useState(operations[0])
   const [ currentTab, setCurrentTab ] = useState(currentOperation.value)
   const [ generatedSQLs, setGeneratedSQLs ] = useState([])
-  const [ fields, setFields ] = useState({
-    cnpj: '',
-    viagem: '',
-    placa: '',
-    cliente: '',
-    km_veiculo: '',
-    cpf: '',
-    cnh: '',
-  })
+  const [ fields, setFields ] = useState(fieldsInitialState)
+  const [ columns, setColumns ] = useState([])
+  const [ rows, setRows ] = useState([])
+  const [ isLoadingRequest , setIsLoadingRequest ] = useState(false)
 
-  const [ columns , setColumns ] = useState([])
-  const [ rows , setRows ] = useState([])
-
-  
   const handleChangeTab = (evento, value) => {
     setCurrentOperation(operations.filter(operation => operation.value === value)[0])
     setCurrentTab(value)
     setGeneratedSQLs([])
-    setFields({
-      cnpj: '',
-      viagem: '',
-      placa: '',
-      cliente: '',
-      km_veiculo: '',
-      cpf: '',
-      cnh: '',
-    })
-  }
-
-  const executeOperationRequest = async (operation) => {
-     const headquarters = operation.scriptSQL.map(sql => 
-      operation.params.map(param => {
-        if(sql.includes(`$${param.name}`)) {
-          if (param.type === 'string') {
-            sql = sql.replaceAll(`$${param.name}`, `'${fields[param.name]}'`)
-          } else {
-            sql = sql.replaceAll(`$${param.name}`, fields[param.name])
-          }
-        }
-        return sql
-      })
-  )
-
-    let body = {}
-
-    headquarters.forEach((sql, index) => body['script'+index] = sql[sql.length-1])
-
-    if(!body.script0) body.script0 = operation.scriptSQL[0]    
-
-    setGeneratedSQLs(Object.keys(body).map(sql => body[sql]))
-    
-    const { data } = await axios.post(apiUrl.concat('/', operation.value), body)
-
-    const dataGridHeaders = data.columns.map(column => column.name)
-
-    setColumns(dataGridHeaders.map(header => {
-      return {
-        field: header,
-        headerName: header.replaceAll('_', ' ').toUpperCase(),
-        width: 150
-      }
-    }))
-    if(!data.rows[0].id) {
-      setRows(data.rows.map((row, index) => {
-        return {
-          ...row,
-          id: index + 1,
-        }
-      }))
-    } else {
-      setRows(data.rows)
-    }
-    
+    setFields(fieldsInitialState)
   }
 
   return (
-    <Grid>
+    <Grid style={{
+      opacity: isLoadingRequest ? 0.5 : 1
+    }}>
+      {isLoadingRequest && <CircularProgress style={{
+        position: 'fixed',
+        top: '50%',
+        zIndex: '1'
+      }} />}
       <h1 style={{ fontSize: '2rem' }}>Locadora de Veículos - Operações intuitivas com SQL</h1>
       <Grid>
       <TabContext value={currentTab}>
@@ -199,7 +142,15 @@ const App = () => {
                           fontWeight: 'bold',
                           width: '500px'
                         }}
-                        onClick={async () => await executeOperationRequest(currentOperation)}
+                        onClick={async () => { 
+                          setIsLoadingRequest(true) 
+                          const { generatedSQLs, rows, columns, isLoadingRequest } =  await executeOperationRequest(currentOperation)
+                          setGeneratedSQLs(generatedSQLs)
+                          setRows(rows)
+                          setColumns(columns)
+                          setIsLoadingRequest(isLoadingRequest) 
+                        }
+                      }
                       >
                         Executar operação
                       </Button>
